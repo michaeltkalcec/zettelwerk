@@ -1,0 +1,16 @@
+# Autostart als systemd-User-Dienst:
+#   mkdir -p ~/.config/systemd/user && cp pdf-manager.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now pdf-manager
+#   (damit er ohne Login läuft: sudo loginctl enable-linger $USER)
+[Unit]
+Description=PDF-Manager
+After=network-online.target
+
+[Service]
+# Einstellungen (PDF-Ordner, Port, Passwort) stehen in config.ini
+WorkingDirectory=%h/Schreibtisch/pdf_manager
+ExecStart=/usr/bin/python3 %h/Schreibtisch/pdf_manager/server.py
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

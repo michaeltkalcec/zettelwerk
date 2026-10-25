@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f5d8a">
+<title>PDF-Manager</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <button id="btnSide" class="icon-btn" title="Seitenleiste ein-/ausklappen" aria-label="Seitenleiste ein-/ausklappen" aria-controls="sidebar">☰</button>
+  <h1>PDFs</h1>
+  <input id="search" type="search" placeholder="Suchen (Name, Ordner, Tag) …" autocomplete="off">
+  <button id="btnRescan" class="icon-btn" title="Neu einlesen" aria-label="Neu einlesen">⟳</button>
+</header>
+
+<div class="layout">
+  <aside id="sidebar" class="sidebar">
+    <nav class="side-views" id="views">
+      <button data-view="all">Alle <span></span></button>
+      <button data-view="new">Neu <span></span></button>
+      <button data-view="untagged">Ohne Tags <span></span></button>
+      <button data-view="trash">Papierkorb <span></span></button>
+    </nav>
+    <div class="side-head">
+      <h3>Tags</h3>
+      <button id="tagReset" class="linkbtn" hidden>Zurücksetzen</button>
+    </div>
+    <input id="tagSearch" type="search" placeholder="Tags durchsuchen …" autocomplete="off">
+    <ul id="tagbar" class="side-tags"></ul>
+  </aside>
+  <div id="sideBackdrop" class="side-backdrop"></div>
+
+  <main>
+    <div class="toolbar" id="controls">
+      <select id="folder" aria-label="Ordner"><option value="">Alle Ordner</option></select>
+      <select id="sort" aria-label="Sortierung">
+        <option value="mtime-desc">Neueste zuerst</option>
+        <option value="mtime-asc">Älteste zuerst</option>
+        <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
+        <option value="size-desc">Größte zuerst</option>
+      </select>
+      <button id="btnSelect" class="btn small">Auswählen</button>
+    </div>
+    <div id="status" class="status"></div>
+    <ul id="list" class="grid"></ul>
+    <button id="btnMore" class="btn more" hidden>Mehr anzeigen</button>
+  </main>
+</div>
+
+<div id="bulkbar" class="bulkbar" hidden>
+  <span id="bulkCount">0 ausgewählt</span>
+  <button id="bulkAll" class="btn small">Alle</button>
+  <button id="bulkTag" class="btn small">Tags …</button>
+  <button id="bulkTrash" class="btn small danger">Papierkorb</button>
+  <button id="bulkCancel" class="btn small">✕</button>
+</div>
+
+<!-- Viewer: liegt als Overlay über der Seite -->
+<div id="viewer" class="viewer" hidden>
+  <div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vTitle">
+    <div class="vbar">
+      <button id="vPrev" class="icon-btn" title="Vorheriges PDF" aria-label="Vorheriges PDF">‹</button>
+      <button id="vNext" class="icon-btn" title="Nächstes PDF" aria-label="Nächstes PDF">›</button>
+      <span id="vTitle" class="vtitle"></span>
+      <span id="vPage" class="vpage"></span>
+      <button id="vOut" class="icon-btn" aria-label="Verkleinern">−</button>
+      <button id="vIn" class="icon-btn" aria-label="Vergrößern">+</button>
+      <button id="vInfo" class="icon-btn" title="Tags &amp; Details" aria-label="Tags und Details"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/></svg></button>
+      <a id="vOpen" class="icon-btn" target="_blank" rel="noopener" title="In neuem Tab öffnen" aria-label="In neuem Tab öffnen">↗</a>
+      <button id="vClose" class="icon-btn" title="Schließen (Esc)" aria-label="Schließen">✕</button>
+    </div>
+    <div id="vPages" class="vpages"></div>
+  </div>
+</div>
+
+<!-- Detail -->
+<dialog id="detail" class="sheet">
+  <form method="dialog" class="sheet-head">
+    <h2 id="dName"></h2>
+    <button class="icon-btn" aria-label="Schließen">✕</button>
+  </form>
+  <p id="dMeta" class="meta"></p>
+  <div class="actions">
+    <button id="dView" class="btn primary">Ansehen</button>
+    <button id="dRename" class="btn">Umbenennen</button>
+    <button id="dTrash" class="btn danger">Papierkorb</button>
+  </div>
+  <h3>Tags</h3>
+  <div id="dTags" class="tags editable"></div>
+  <form id="dTagForm" class="tagform">
+    <input id="dTagInput" list="tagList" placeholder="Tag hinzufügen …" autocomplete="off" enterkeyhint="done">
+    <button class="btn">+</button>
+  </form>
+  <div id="dSuggest" class="tags suggest"></div>
+</dialog>
+
+<!-- Bulk-Tags -->
+<dialog id="bulkDlg" class="sheet">
+  <form method="dialog" class="sheet-head">
+    <h2>Tags für <span id="bCount"></span> Dateien</h2>
+    <button class="icon-btn" aria-label="Schließen">✕</button>
+  </form>
+  <form id="bForm" class="tagform">
+    <input id="bInput" list="tagList" placeholder="Tag eingeben …" autocomplete="off">
+    <button class="btn primary" data-act="add">Hinzufügen</button>
+    <button class="btn" data-act="remove">Entfernen</button>
+  </form>
+  <div id="bSuggest" class="tags suggest"></div>
+</dialog>
+
+<datalist id="tagList"></datalist>
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
