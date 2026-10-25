@@ -1,4 +1,4 @@
-# PZettelwerk
+# Zettelwerk
 
 
 Leichtgewichtige Web-App zum Betrachten, Taggen, Umbenennen und Löschen (Papierkorb)
